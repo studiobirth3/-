@@ -1,0 +1,1043 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>スタジオバース｜新人研修システム</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&family=DM+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --brand:#1C508A;--brand-d:#0f3060;--brand-l:#2d6aad;
+  --accent:#F0A500;--ok:#22c55e;--ng:#ef4444;--warn:#f59e0b;
+  --bg:#f0f4f9;--surface:#fff;--surface2:#f8f9fc;
+  --txt:#1a1f2e;--txt-m:#4a5568;--txt-s:#94a3b8;--border:#e2e8f0;
+  --r:16px;--rs:10px;--f:'Noto Sans JP',sans-serif;--fm:'DM Mono',monospace;
+  --sh:0 2px 16px rgba(28,80,138,.09);--shm:0 6px 28px rgba(28,80,138,.14);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--f);background:var(--bg);color:var(--txt);min-height:100vh}
+button{font-family:var(--f);cursor:pointer}
+input,textarea{font-family:var(--f)}
+.screen{display:none;min-height:100vh;flex-direction:column}
+.screen.active{display:flex}
+.hdr{background:var(--brand);padding:13px 18px;display:flex;align-items:center;gap:12px;color:#fff;box-shadow:0 2px 12px rgba(0,0,0,.18);flex-shrink:0}
+.logo{width:36px;height:36px;background:var(--accent);border-radius:9px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:18px;color:#fff;flex-shrink:0}
+.hdr h1{font-size:14px;font-weight:700}
+.hdr p{font-size:11px;opacity:.7;margin-top:1px}
+.back{background:none;border:none;color:#fff;font-size:20px;line-height:1;padding:0;margin-right:4px}
+.card{background:var(--surface);border-radius:var(--r);box-shadow:var(--sh);padding:20px}
+.btn{border:none;border-radius:var(--rs);padding:14px 18px;font-size:14px;font-weight:700;color:#fff;transition:all .2s;display:inline-block;text-align:center;cursor:pointer}
+.btn-b{background:var(--brand);box-shadow:0 4px 14px rgba(28,80,138,.28)}
+.btn-b:hover{background:var(--brand-d)}
+.btn-b:disabled{background:#94a3b8;cursor:default;box-shadow:none}
+.btn-o{background:transparent;color:var(--brand);border:2px solid var(--brand)}
+.btn-o:hover{background:#eef4ff}
+.btn-w{width:100%;display:block}
+.badge{display:inline-block;font-size:10px;font-weight:700;padding:2px 9px;border-radius:20px;letter-spacing:.05em}
+.b-ok{background:#dcfce7;color:#166534}
+.b-ng{background:#fee2e2;color:#dc2626}
+.b-new{background:#fff7ed;color:var(--accent)}
+.b-lock{background:var(--border);color:var(--txt-s)}
+.b-brand{background:rgba(28,80,138,.12);color:var(--brand)}
+.scroll{flex:1;overflow-y:auto;padding:18px;max-width:680px;margin:0 auto;width:100%}
+.tabs{background:var(--surface);border-bottom:1px solid var(--border);display:flex;flex-shrink:0}
+.tab{flex:1;padding:13px 6px;border:none;background:none;font-size:12px;font-weight:700;color:var(--txt-s);border-bottom:3px solid transparent;transition:all .2s;cursor:pointer}
+.tab.on{color:var(--brand);border-bottom-color:var(--brand)}
+.flash{background:#dcfce7;color:#166534;border-radius:10px;padding:11px 14px;font-size:13px;font-weight:600;margin-bottom:14px;animation:fi .3s ease}
+@keyframes fi{from{opacity:0;transform:translateY(-5px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── 役割選択 ── */
+#screen-role{align-items:center;justify-content:center}
+.role-hero{background:var(--brand);border-radius:14px;padding:18px 32px;margin-bottom:28px;text-align:center;box-shadow:0 6px 24px rgba(28,80,138,.3)}
+.role-hero .big{color:var(--accent);font-weight:900;font-size:32px;letter-spacing:-1px}
+.role-hero .sub{color:rgba(255,255,255,.7);font-size:11px;margin-top:2px}
+.role-wrap{width:100%;max-width:340px;padding:0 20px}
+.role-btn{display:flex;align-items:center;gap:14px;background:var(--surface);border:2px solid var(--border);border-radius:14px;padding:18px 20px;cursor:pointer;transition:all .22s;margin-bottom:12px;text-align:left;width:100%}
+.role-btn:hover{border-color:var(--brand);transform:translateY(-2px);box-shadow:var(--shm)}
+.role-btn.primary{background:var(--brand);border-color:var(--brand);color:#fff}
+.role-btn .ic{font-size:26px;flex-shrink:0}
+.role-btn h3{font-size:16px;font-weight:700;margin-bottom:2px}
+.role-btn p{font-size:12px;opacity:.7}
+
+/* ── ステップマップ ── */
+.step-conn{height:14px;display:flex;align-items:center;justify-content:center}
+.step-conn::before{content:'';width:2px;height:100%;background:var(--border);display:block}
+.step-card{background:var(--surface);border-radius:var(--r);border:2px solid var(--border);padding:16px 18px;transition:all .22s;box-shadow:var(--sh);display:flex;align-items:center;gap:14px}
+.step-card.can:hover{border-color:var(--brand);transform:translateY(-1px);box-shadow:var(--shm);cursor:pointer}
+.step-card.passed{border-color:var(--ok)}
+.step-card.locked{opacity:.5}
+.snum{width:46px;height:46px;border-radius:11px;display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0}
+.snum .sw{font-size:7px;font-weight:700;letter-spacing:.1em;opacity:.8}
+.snum .sn{font-size:22px;font-weight:700;line-height:1;font-family:var(--fm)}
+.sinfo{flex:1}
+.sinfo h3{font-size:14px;font-weight:700;margin-bottom:2px}
+.sinfo p{font-size:11px;color:var(--txt-m);margin-bottom:5px}
+.stars{font-size:12px}
+.score-legend{background:linear-gradient(135deg,var(--brand),var(--brand-l));border-radius:var(--r);padding:16px 18px;color:#fff;margin-bottom:18px}
+.score-legend h3{font-size:12px;font-weight:700;margin-bottom:10px;opacity:.9}
+.si-row{display:flex;gap:7px;flex-wrap:wrap}
+.si{background:rgba(255,255,255,.14);border-radius:8px;padding:7px 10px;text-align:center;flex:1;min-width:54px}
+.si .sv{font-family:var(--fm);font-size:16px;font-weight:700}
+.si .sl{font-size:9px;opacity:.85;margin-top:2px}
+
+/* ── クイズ ── */
+#screen-quiz{background:var(--bg)}
+.qhdr{background:var(--surface);border-bottom:1px solid var(--border);padding:12px 18px;flex-shrink:0}
+.qmeta{display:flex;align-items:center;justify-content:space-between;margin-bottom:9px}
+.step-tag{background:var(--brand);color:#fff;font-size:11px;font-weight:700;padding:3px 11px;border-radius:20px;font-family:var(--fm)}
+.q-cnt{font-size:11px;color:var(--txt-s);font-family:var(--fm)}
+.score-live{font-size:12px;font-weight:700;color:var(--brand);font-family:var(--fm)}
+.qbar{height:4px;background:var(--border);border-radius:2px;overflow:hidden;margin-bottom:9px}
+.qbar-fill{height:100%;background:var(--brand);border-radius:2px;transition:width .4s}
+.timer-row{display:flex;align-items:center;gap:10px}
+.timer-track{flex:1;height:8px;background:var(--border);border-radius:4px;overflow:hidden}
+.timer-fill{height:100%;border-radius:4px;transition:width .1s linear,background .5s}
+.timer-num{font-family:var(--fm);font-size:14px;font-weight:700;min-width:24px;text-align:right;transition:color .3s}
+.qbody{flex:1;padding:20px 18px 32px;max-width:680px;margin:0 auto;width:100%;overflow-y:auto}
+.qpills{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:13px}
+.pill-type{background:var(--surface);border:1.5px solid var(--border);border-radius:20px;padding:3px 11px;font-size:11px;font-weight:700;color:var(--txt-m)}
+.pill-cat{background:rgba(28,80,138,.09);border-radius:20px;padding:3px 11px;font-size:11px;font-weight:700;color:var(--brand)}
+.qtext{font-size:17px;font-weight:700;line-height:1.65;margin-bottom:20px;color:var(--txt)}
+.opts{list-style:none;display:flex;flex-direction:column;gap:9px}
+.opt{width:100%;background:var(--surface);border:2px solid var(--border);border-radius:var(--r);padding:14px 16px;display:flex;align-items:center;gap:13px;font-size:14px;font-weight:500;color:var(--txt);transition:all .18s;text-align:left}
+.opt:hover:not(:disabled){border-color:var(--brand);background:#eef4ff}
+.opt:disabled{cursor:default}
+.opt-k{width:30px;height:30px;border-radius:8px;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-family:var(--fm);font-size:12px;font-weight:700;transition:all .18s;flex-shrink:0}
+.opt.ok{border-color:var(--ok);background:#f0fdf4;color:#15803d}
+.opt.ok .opt-k{background:var(--ok);border-color:var(--ok);color:#fff}
+.opt.ng{border-color:var(--ng);background:#fef2f2;color:#dc2626}
+.opt.ng .opt-k{background:var(--ng);border-color:var(--ng);color:#fff}
+.opt.reveal{border-color:var(--ok);background:#f0fdf4;color:#15803d}
+.opt.reveal .opt-k{background:var(--ok);border-color:var(--ok);color:#fff}
+.ox-row{display:flex;gap:12px}
+.ox{flex:1;background:var(--surface);border:2px solid var(--border);border-radius:var(--r);padding:22px 16px;text-align:center;font-size:44px;line-height:1;transition:all .18s}
+.ox:hover:not(:disabled){border-color:var(--brand);background:#eef4ff;transform:scale(1.03)}
+.ox:disabled{cursor:default}
+.ox.ok{border-color:var(--ok);background:#f0fdf4}
+.ox.ng{border-color:var(--ng);background:#fef2f2}
+.ox.reveal{border-color:var(--ok);background:#f0fdf4}
+.fb{margin-top:14px;padding:13px 16px;border-radius:var(--rs);font-size:13px;line-height:1.65;display:none}
+.fb.show{display:block}
+.fb-ok{background:#f0fdf4;border-left:4px solid var(--ok);color:#166534}
+.fb-ng{background:#fef2f2;border-left:4px solid var(--ng);color:#991b1b}
+.fb-to{background:#fff7ed;border-left:4px solid var(--warn);color:#92400e}
+.fb strong{display:block;font-size:14px;font-weight:700;margin-bottom:3px}
+.bonus-flash{margin-top:9px;background:linear-gradient(135deg,var(--accent),#e8961a);color:#fff;border-radius:8px;padding:9px 13px;font-weight:700;font-size:14px;text-align:center;display:none;animation:bp .35s ease}
+.bonus-flash.show{display:block}
+@keyframes bp{0%{transform:scale(.85);opacity:0}60%{transform:scale(1.05)}100%{transform:scale(1);opacity:1}}
+.next-btn{width:100%;border:none;border-radius:var(--r);padding:16px;font-size:15px;font-weight:700;background:var(--brand);color:#fff;margin-top:18px;display:none;transition:background .2s;box-shadow:0 4px 16px rgba(28,80,138,.28)}
+.next-btn:hover{background:var(--brand-d)}
+.next-btn.show{display:block}
+
+/* ── 結果 ── */
+.unlock-banner{background:linear-gradient(135deg,var(--accent),#e8961a);border-radius:var(--r);padding:16px 18px;color:#fff;margin-bottom:14px;animation:fi .5s ease}
+.unlock-banner h3{font-size:15px;font-weight:900;margin-bottom:3px}
+.res-hero{text-align:center;padding:28px 20px}
+.res-hero .emoji{font-size:50px;margin-bottom:10px}
+.res-hero h2{font-size:19px;font-weight:900;margin-bottom:3px}
+.res-stag{font-size:12px;color:var(--txt-s);margin-bottom:18px}
+.sg{display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px;margin:0 0 16px}
+.sc{background:var(--surface2);border-radius:var(--rs);padding:12px 7px;text-align:center}
+.sc .sv{font-family:var(--fm);font-size:24px;font-weight:700;line-height:1}
+.sc .sl{font-size:10px;color:var(--txt-s);margin-top:3px}
+.res-msg{font-size:13px;color:var(--txt-m);line-height:1.65}
+.rev-row{display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid var(--surface2)}
+.rev-row:last-child{border-bottom:none}
+.rev-ic{font-size:17px;flex-shrink:0;margin-top:1px}
+.rev-info{flex:1}
+.rev-q{font-size:12px;font-weight:600;color:var(--txt);line-height:1.4;margin-bottom:2px}
+.rev-d{font-size:11px;color:var(--txt-s)}
+.rev-pt{font-family:var(--fm);font-size:12px;font-weight:700;color:var(--brand);flex-shrink:0}
+
+/* ── 管理者 ── */
+.res-table{width:100%;border-collapse:collapse;font-size:12px;min-width:380px}
+.res-table th{padding:7px 8px;text-align:left;font-weight:700;color:var(--txt-m);border-bottom:2px solid var(--border);background:var(--surface2)}
+.res-table td{padding:7px 8px;border-bottom:1px solid var(--surface2)}
+
+/* ── 問題編集 ── */
+.q-editor-item{background:var(--surface2);border-radius:var(--rs);padding:14px;margin-bottom:10px;border-left:3px solid var(--brand)}
+.q-editor-item .qe-meta{display:flex;gap:6px;margin-bottom:6px;flex-wrap:wrap;align-items:center}
+.q-editor-item .qe-text{font-size:12px;font-weight:600;color:var(--txt);line-height:1.45;margin-bottom:4px}
+.q-editor-item .qe-ans{font-size:11px;color:var(--txt-m)}
+.add-q-form{background:var(--surface2);border-radius:var(--rs);padding:16px;margin-top:14px}
+.add-q-form label{font-size:11px;font-weight:700;color:var(--txt-s);display:block;margin-bottom:4px;margin-top:10px;letter-spacing:.05em;text-transform:uppercase}
+.add-q-form label:first-child{margin-top:0}
+.add-q-form input,.add-q-form textarea,.add-q-form select{width:100%;border:2px solid var(--border);border-radius:8px;padding:8px 11px;font-size:13px;outline:none;transition:border-color .2s;color:var(--txt);background:var(--surface)}
+.add-q-form input:focus,.add-q-form textarea:focus{border-color:var(--brand)}
+
+@media(max-width:480px){.qtext{font-size:15px}.sg{gap:6px}.sc .sv{font-size:20px}}
+</style>
+</head>
+<body>
+
+<!-- ===================== 役割選択 ===================== -->
+<div id="screen-role" class="screen active">
+  <div class="role-wrap" style="display:flex;flex-direction:column;align-items:center">
+    <div class="role-hero">
+      <div class="big">VERSE</div>
+      <div class="sub">Studio Training System</div>
+    </div>
+    <h2 style="font-size:18px;font-weight:700;margin-bottom:5px;text-align:center">スタジオバース 研修アプリ</h2>
+    <p style="font-size:13px;color:var(--txt-m);margin-bottom:24px;text-align:center">役割を選んでください</p>
+    <button class="role-btn primary" onclick="App.goManager()">
+      <span class="ic">🏢</span>
+      <div><h3>管理者</h3><p>問題管理・スタッフ結果確認</p></div>
+    </button>
+    <button class="role-btn" onclick="App.goStaff()">
+      <span class="ic">👤</span>
+      <div><h3 style="color:var(--txt)">スタッフ</h3><p>テストを受ける</p></div>
+    </button>
+  </div>
+</div>
+
+<!-- ===================== 管理者 ===================== -->
+<div id="screen-manager" class="screen">
+  <header class="hdr">
+    <button class="back" onclick="App.goRole()">←</button>
+    <div class="logo">V</div>
+    <div><h1>管理者ダッシュボード</h1><p>問題管理・スタッフ結果</p></div>
+  </header>
+  <div class="tabs">
+    <button class="tab on" id="tab-q-btn"   onclick="App.showTab('q')">📋 問題管理</button>
+    <button class="tab"    id="tab-res-btn"  onclick="App.showTab('res')">📊 結果確認</button>
+  </div>
+  <div class="scroll">
+    <div id="flash" class="flash" style="display:none"></div>
+
+    <!-- 問題管理 -->
+    <div id="tab-q">
+      <div class="card" style="margin-bottom:12px;background:linear-gradient(135deg,var(--brand),var(--brand-l));color:#fff">
+        <div style="font-size:13px;font-weight:700;margin-bottom:6px">💡 問題の更新方法</div>
+        <div style="font-size:12px;opacity:.9;line-height:1.6">
+          1. このClaude.aiチャットに「スタジオバースのマニュアルを読んで、STEP〇〇の問題を〇問作って」と依頼<br>
+          2. 作成された問題を下の「問題を追加」から入力<br>
+          3. 各STEPに多くの問題を登録するほど、毎回違う問題が出題されます
+        </div>
+      </div>
+      <div id="q-mgr-list"></div>
+    </div>
+
+    <!-- 結果確認 -->
+    <div id="tab-res" style="display:none">
+      <div id="res-content"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== スタッフ ホーム ===================== -->
+<div id="screen-staff" class="screen">
+  <header class="hdr">
+    <button class="back" onclick="App.goRole()">←</button>
+    <div class="logo">V</div>
+    <div><h1>スタジオバース 研修アプリ</h1><p>Studio Verse Training</p></div>
+  </header>
+  <div class="scroll">
+    <div class="card" style="margin-bottom:18px">
+      <label style="font-size:11px;font-weight:700;color:var(--txt-s);letter-spacing:.08em;text-transform:uppercase;display:block;margin-bottom:8px">スタッフ名</label>
+      <div style="display:flex;gap:8px">
+        <input id="name-input" type="text" placeholder="例：山田 太郎" maxlength="20"
+          style="flex:1;border:2px solid var(--border);border-radius:8px;padding:11px 13px;font-size:15px;outline:none;color:var(--txt)"
+          onkeydown="if(event.key==='Enter')App.saveName()">
+        <button class="btn btn-b" style="padding:10px 16px;border-radius:8px;font-size:13px;white-space:nowrap" onclick="App.saveName()">設定</button>
+      </div>
+      <div id="name-ok" style="font-size:12px;color:var(--ok);font-weight:600;margin-top:6px;display:none"></div>
+    </div>
+    <div class="score-legend">
+      <h3>⚡ スコア方式</h3>
+      <div class="si-row">
+        <div class="si"><div class="sv">10pt</div><div class="sl">正解</div></div>
+        <div class="si"><div class="sv">＋5pt</div><div class="sl">10秒以内</div></div>
+        <div class="si"><div class="sv">＋3pt</div><div class="sl">20秒以内</div></div>
+        <div class="si"><div class="sv">＋1pt</div><div class="sl">30秒以内</div></div>
+        <div class="si"><div class="sv">0pt</div><div class="sl">時間切れ</div></div>
+      </div>
+    </div>
+    <div style="font-size:10px;font-weight:700;color:var(--txt-s);letter-spacing:.12em;text-transform:uppercase;margin-bottom:12px">ステップ一覧</div>
+    <div id="step-map"></div>
+  </div>
+</div>
+
+<!-- ===================== クイズ ===================== -->
+<div id="screen-quiz" class="screen">
+  <div class="qhdr">
+    <div class="qmeta">
+      <span class="step-tag" id="qh-step">STEP 1</span>
+      <span class="q-cnt"    id="qh-cnt">1 / 6</span>
+      <span class="score-live" id="qh-score">0 pt</span>
+    </div>
+    <div class="qbar"><div class="qbar-fill" id="qbar-fill"></div></div>
+    <div class="timer-row">
+      <div class="timer-track"><div class="timer-fill" id="timer-fill"></div></div>
+      <div class="timer-num"  id="timer-num">30</div>
+    </div>
+  </div>
+  <div class="qbody">
+    <div class="qpills">
+      <span class="pill-type" id="pill-type">4択</span>
+      <span class="pill-cat"  id="pill-cat">清掃</span>
+    </div>
+    <div class="qtext" id="q-text"></div>
+    <div id="q-opts"></div>
+    <div class="fb" id="fb"><strong id="fb-title"></strong><span id="fb-body"></span></div>
+    <div class="bonus-flash" id="bonus-flash"></div>
+    <button class="next-btn" id="next-btn" onclick="Quiz.next()">次の問題 →</button>
+  </div>
+</div>
+
+<!-- ===================== 結果 ===================== -->
+<div id="screen-result" class="screen">
+  <header class="hdr">
+    <div class="logo">V</div>
+    <div><h1>テスト結果</h1><p>Studio Verse Training</p></div>
+  </header>
+  <div class="scroll">
+    <div id="unlock-banner" class="unlock-banner" style="display:none">
+      <h3>🔓 次のステップ解放！</h3>
+      <p id="unlock-msg"></p>
+    </div>
+    <div class="card" style="margin-bottom:14px">
+      <div class="res-hero">
+        <div class="emoji" id="res-emoji">🎉</div>
+        <span class="badge" id="res-badge">合格</span>
+        <h2 id="res-name" style="margin-top:12px"></h2>
+        <div class="res-stag" id="res-stag"></div>
+        <div class="sg">
+          <div class="sc"><div class="sv" id="res-cc" style="color:var(--brand)">0</div><div class="sl">正解数</div></div>
+          <div class="sc"><div class="sv" id="res-bn" style="color:var(--accent)">0</div><div class="sl">ボーナス</div></div>
+          <div class="sc"><div class="sv" id="res-ts" style="color:var(--brand-d)">0</div><div class="sl">合計スコア</div></div>
+        </div>
+        <div class="res-msg" id="res-msg"></div>
+      </div>
+    </div>
+    <div class="card" style="margin-bottom:14px">
+      <div style="font-size:11px;font-weight:700;color:var(--txt-s);letter-spacing:.08em;text-transform:uppercase;margin-bottom:12px">問題ごとの結果</div>
+      <div id="rev-rows"></div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <button class="btn btn-b btn-w" style="font-size:15px;padding:15px;border-radius:var(--r)" onclick="Quiz.retry()">もう一度挑戦（別の問題）</button>
+      <button class="btn btn-o btn-w" style="padding:14px;border-radius:var(--r);font-size:14px" onclick="App.goStaff()">ステップ選択に戻る</button>
+    </div>
+  </div>
+</div>
+
+<!-- =====================================================================
+     ★★★ 問題データ ★★★
+     ここを編集して問題を追加・変更してください。
+     各STEPに多くの問題を登録するほど毎回違う問題が出題されます。
+     テストでは Q_PER_TEST 件がランダムに選ばれます（デフォルト6問）。
+
+     type: "choice"（4択）または "ox"（○×）
+     cat:  カテゴリ名（表示用）
+     choice の correct: 0〜3（A=0, B=1, C=2, D=3）
+     ox の correct: true（○が正解）または false（×が正解）
+===================================================================== -->
+<script>
+const Q_PER_TEST = 6; // 1回のテストで出題する問題数
+
+const QUESTION_BANK = [
+
+  // ================================================================
+  // STEP 1 — 清掃・基礎業務
+  // ================================================================
+  {step:0, type:"choice", cat:"清掃",
+   text:"清掃チェックリストの「未」は何を意味しますか？",
+   options:["掃除が完了して次の日の朝しなくてもよい状態","予約が入っていて掃除ができていない状態","予約以外の理由で掃除していない状態","別のスタッフに引き継いだ状態"],
+   correct:2,
+   explanation:"「未」は予約以外の理由で掃除していない状態です。できなかった・やらなかった理由は日報に必ず書いてください。「済」は完了、「予」は予約で掃除できていない状態です。"},
+
+  {step:0, type:"choice", cat:"清掃",
+   text:"清掃が時間内に終わらないことが明らかな場合、優先する掃除の順番として正しいのは？",
+   options:["1Fダンススタジオ → 2Fダンススタジオ → トイレ","トイレ → 翌日朝イチに予約が入っている部屋","翌日朝イチの部屋 → トイレ → その他","全部屋を一度に少しずつ清掃する"],
+   correct:1,
+   explanation:"マニュアルでは「トイレ → 翌日朝イチで予約が入っている部屋」の優先順位で清掃します。清掃は「終わらせる」のが普通ですが、緊急時はこの順番を守ってください。"},
+
+  {step:0, type:"ox", cat:"備品管理",
+   text:"ケーブル・シールドは小さくコンパクトに巻くほど傷みにくく良い。",
+   correct:false,
+   explanation:"小さく巻くと巻き方に癖がついて傷んでしまいます。ケーブル・シールドは大きく八の字巻きにすることで傷みにくくなります。すでに小さく巻かれているものは大きく巻き直してください。"},
+
+  {step:0, type:"choice", cat:"消耗品管理",
+   text:"消耗品（トイレットペーパーや洗剤など）がなくなりそうな場合、正しい報告方法は？",
+   options:["完全になくなってから上司に連絡する","日報だけに書いておけばよい","日報への記載と上司への直接連絡の両方を行う","いつなくなるかを予測して補充を自分で注文する"],
+   correct:2,
+   explanation:"備品・商品の在庫僅少は日報への記載と合わせて上司に直接連絡を入れることがマニュアルで定められています。急ぐ場合は「明日までに最低いくつ欲しい」と数量と期限も伝えましょう。"},
+
+  {step:0, type:"choice", cat:"清掃",
+   text:"マキタ掃除機（小）はどこに保管されていますか？",
+   options:["スタッフルーム","カウンターキッチン","1Fダンススタジオ更衣室","2Fダンススタジオ倉庫"],
+   correct:1,
+   explanation:"マキタ掃除機（小）はカウンターキッチンに保管されています。大型のコード付き掃除機やマキタ掃除機（大）はスタッフルームにあります。掃除用具の場所を確実に覚えましょう。"},
+
+  {step:0, type:"ox", cat:"閉館業務",
+   text:"クローズ時は灰皿を外に出したまま施錠してよい。",
+   correct:false,
+   explanation:"クローズ時は灰皿をスタジオの中に入れてから、すべての電気を消して施錠します。また、鍵の持ち帰りには十分注意してください。"},
+
+  {step:0, type:"ox", cat:"備品管理",
+   text:"部屋の備品の元の位置は、写真ではなく自分の記憶を頼りに戻せばよい。",
+   correct:false,
+   explanation:"元の位置の写真は部屋やカウンターのマニュアルに貼ってあります。わからないうちは「写真の通りに並べる」ことや、ケーブル等の本数をきちんと確認することを徹底してください。"},
+
+  {step:0, type:"choice", cat:"清掃",
+   text:"予約の入っていないスタジオの清掃について、正しい対応は？",
+   options:["必ず時間をかけて念入りに清掃する","他の業務があれば点検のみでも可","清掃は翌日にまとめてよい","予約がないので清掃しなくてよい"],
+   correct:1,
+   explanation:"その日予約の入っていないスタジオは、一度スタジオ内を確認してみて時間をかけて掃除をする必要がなければ、他の業務がある場合は点検のみでも可です。ただし点検しなかった場合は日報に一言書いてください。"},
+
+  // ================================================================
+  // STEP 2 — チケット・レジ・電話・予約
+  // ================================================================
+  {step:1, type:"choice", cat:"商品管理",
+   text:"チケット確認の手順①〜④で、「商品チケットと商品棚を目視で確認して補充する」のは何番目ですか？",
+   options:["①番目","②番目","③番目","④番目"],
+   correct:2,
+   explanation:"チケット確認の順番は「①チケット確認・分ける → ②商品・レンタルチケットをスキャン → ③目視確認して商品補充 → ④Airレジでレジ打ち」です。③が目視確認・補充のステップです。"},
+
+  {step:1, type:"ox", cat:"商品管理",
+   text:"レンタル品が売れた場合も、Airレジへの入力（レジ打ち）が必要だ。",
+   correct:false,
+   explanation:"レンタル品はAirレジに項目がないため、レジ打ちは不要です。商品チケットはレジ打ち完了後に破棄しますが、予約チケットは日付ごとに輪ゴムでまとめてロッカーにしまいます。"},
+
+  {step:1, type:"choice", cat:"商品管理",
+   text:"飲食物を補充する際、新しく入れたものはどこに置きますか？",
+   options:["前に置く（すぐ取り出せるように）","後ろに置く（先入れ先出しのため）","日付を確認して混ぜる","棚の空いているところに置く"],
+   correct:1,
+   explanation:"飲食物は新しく補充したものが後ろにくるように並べます。先に補充してあったものから先に販売される「先入れ先出し」の原則です。"},
+
+  {step:1, type:"ox", cat:"商品管理",
+   text:"Airレジに項目がない商品が売れた場合、その場で新しい項目を自分で追加してレジ打ちする。",
+   correct:false,
+   explanation:"Airレジに項目がない場合は入力せず、上司と日報の両方に売れたことを報告します。項目の追加は上司の判断で行われます。"},
+
+  {step:1, type:"choice", cat:"電話対応",
+   text:"電話対応（予約受付など）が解禁されるタイミングはいつですか？",
+   options:["入社してすぐ","清掃業務をマスターした後","上司からOKが出次第","1ヶ月経過後"],
+   correct:2,
+   explanation:"マニュアルに「電話は上司からOKが出次第解禁です。解禁まではとらなくても大丈夫です」と明記されています。解禁前は無理に対応しなくてOKです。"},
+
+  {step:1, type:"choice", cat:"予約",
+   text:"LINEでの予約受付が対象となるのはどこですか？",
+   options:["アジトと表町の両方","アジトのみ","表町のみ","スタジオバース全店舗"],
+   correct:1,
+   explanation:"LINEでの予約対応はアジトのみが対象です。表町の予約は別の方法で対応します。店舗ごとの予約方法の違いをしっかり把握しておきましょう。"},
+
+  {step:1, type:"ox", cat:"商品管理",
+   text:"在庫状況はiPhoneのAirレジで確認できる。",
+   correct:true,
+   explanation:"在庫状況はiPhoneにインストールされているAirレジで確認できます。出勤した際はチケットと商品棚を確認し、売れているものがあれば補充してください。"},
+
+  {step:1, type:"choice", cat:"商品管理",
+   text:"予約チケットはどのように保管しますか？",
+   options:["すべてまとめてファイルに入れる","破棄してよい","日付ごとに輪ゴムでまとめてロッカーにしまう","上司に渡す"],
+   correct:2,
+   explanation:"予約チケットは日付ごとに輪ゴムでまとめてロッカーにしまいます。商品・レンタルチケットはレジ打ちまで終わったら破棄しますが、予約チケットは保管が必要です。"},
+
+  // ================================================================
+  // STEP 3 — メンテナンス・機材・新規対応
+  // ================================================================
+  {step:2, type:"choice", cat:"メンテナンス",
+   text:"ステップ②でできるようになるドラムのメンテナンスとして正しい組み合わせはどれですか？",
+   options:["タップキリ・ねじ交換・ヘッド交換","チューニング・グリス・拭き掃除","チューニング・タップキリ・ねじ交換","グリス・拭き掃除・ヘッド張り替え"],
+   correct:1,
+   explanation:"ステップ②のドラムメンテナンスは「チューニング・グリス・拭き掃除」の3点です。故障時の機材入れ替えはステップ③、タップキリはより上位のステップで習得します。"},
+
+  {step:2, type:"ox", cat:"メンテナンス",
+   text:"故障した機材の入れ替え対応は、ステップ②から行えるようになる。",
+   correct:false,
+   explanation:"故障時の機材入れ替えはステップ③から習得する内容です。ステップ②ではチューニング・グリス・拭き掃除が対象で、機材入れ替えはもう一段上のスキルです。"},
+
+  {step:2, type:"choice", cat:"接客",
+   text:"フォトスタジオをご利用のお客様が来店された際、必ず説明しなければならない内容は？",
+   options:["利用方法のみ説明する","料金の確認のみ行う","利用方法と、汚れた場合の修繕費（8,800円）について説明する","特に説明は不要でマニュアルを渡す"],
+   correct:2,
+   explanation:"フォトスタジオは予約者がシフト内で来店された場合、「利用方法」と「汚れた場合の修繕費（8,800円）」の両方を説明することがマニュアルで定められています。"},
+
+  {step:2, type:"ox", cat:"清掃",
+   text:"フォトスタジオは予約が入っている日だけ清掃・点検に入ればよい。",
+   correct:false,
+   explanation:"フォトスタジオは予約前に必ず清掃・点検に入り、利用後も必ず掃除することがマニュアルで定められています。予約の有無に関わらず、フォトスタは特別な扱いが必要です。"},
+
+  {step:2, type:"choice", cat:"メール対応",
+   text:"定型文以外のメール（イレギュラーな問い合わせへの返信）の対応として正しいのは？",
+   options:["自分の判断で返信してよい","返信せずに上司に転送する","上司に確認してから返信する","定型文で代替できるよう工夫して返信する"],
+   correct:2,
+   explanation:"ステップ③での定型文以外のメール対応は、必ず上司に確認してから返信します。自己判断での返信はNGです。"},
+
+  {step:2, type:"choice", cat:"備品管理",
+   text:"備品のポーチや入れ物に備品が入っている場合、正しい確認方法は？",
+   options:["外から重さを確認する","ポーチを開けて中身まで確認する","前回確認した内容を信頼してそのままにする","週に1回だけ中身を確認する"],
+   correct:1,
+   explanation:"マニュアルでは「ポーチ等の入れ物に入っている備品はきちんと中身まで見る」と定められています。表面だけの確認では備品の紛失や不足を見逃す可能性があります。"},
+
+  {step:2, type:"ox", cat:"メール対応",
+   text:"ステップ②では定型文のメールを上司への確認なしに自分で返信してよい。",
+   correct:false,
+   explanation:"ステップ②での定型文メールの返信は「確認後」が条件です。どのステップでもメール返信には上司への確認が必要です。慣れてきたら確認の頻度が減っていきます。"},
+
+  // ================================================================
+  // STEP 4 — 機材説明・ドラム・人材育成
+  // ================================================================
+  {step:3, type:"ox", cat:"機材",
+   text:"ステップ④では、部屋に置いてある全ての機材の使い方をお客様に説明できることが求められる。",
+   correct:true,
+   explanation:"ステップ④の「スタジオ業務」達成条件は「部屋に置いてある全ての機材の使い方の説明ができる（テストで判断）」です。個別の機材ではなく、全機材が対象です。"},
+
+  {step:3, type:"choice", cat:"メンテナンス",
+   text:"ドラムチューニングのテスト合格の目安として正しいのは？",
+   options:["1台10分・1回合格","1台5分・3回合格","1台3分・5回合格","時間制限なし・1回合格"],
+   correct:1,
+   explanation:"ドラムチューニングは「1台5分・3回合格」が目安です（上司から承認される、希望日にテスト3回合格）。希望日にテストを申し込んで計画的に練習しましょう。"},
+
+  {step:3, type:"choice", cat:"販売",
+   text:"ステップ④の「料金」項目の達成条件はどれですか？",
+   options:["お客様への料金案内を10回以上行った","販売品が何があるかをすべて説明できる（上司のテストで判断）","新規のお客様に料金を5回以上説明できた","割引サービスの内容を全て説明できる"],
+   correct:1,
+   explanation:"ステップ④の料金項目は「販売品は何があるか全て説明できる（上司がテストで判断）」が達成条件です。何を販売しているかを全てすらすら説明できる状態を目指しましょう。"},
+
+  {step:3, type:"choice", cat:"電話対応",
+   text:"ステップ④で電話対応に追加される内容はどれですか？",
+   options:["営業電話を認識して断れるようになる","イベントを含む全ての予約を受け付けられる","イベント以外の予約受付をもれなく説明できる（テストで判断）","他店舗への誘導・案内ができる"],
+   correct:2,
+   explanation:"ステップ④の電話対応は「イベント以外の予約受付をもれなく説明できる（マニュアルにのっとって説明している）」がテスト合格条件です。"},
+
+  {step:3, type:"choice", cat:"人材育成",
+   text:"ステップ④の人材育成の達成条件として正しいのは？",
+   options:["自分がステップ③の内容を教えられる状態になった","教えたスタッフが実際にステップ②まで上がった","後輩スタッフを3名以上指導した","ステップ①の内容をマニュアルなしで説明できる"],
+   correct:1,
+   explanation:"ステップ④の人材育成は「教えて、教えたスタッフがステップ②まで上がった」が条件です。自分が教えられるだけでなく、教えた相手が実際にステップアップしてはじめて達成となります。"},
+
+  {step:3, type:"ox", cat:"日報",
+   text:"掃除を他のスタッフにお願いしてもらった場合、日報への記入は不要だ。",
+   correct:false,
+   explanation:"ステップ④では「できていないことを他の人にお願いできる・引継ぎができる」が求められますが、「お願いを確認し、頼まれた掃除を終わらせ、終了したことを日報に記入できている」ことまでが達成条件です。"},
+
+  {step:3, type:"ox", cat:"メンテナンス",
+   text:"ドラムの簡単なねじ交換はステップ⑤から対応できるようになる。",
+   correct:false,
+   explanation:"ドラムの簡単なねじ交換などはステップ⑤（上位ステップ）の内容です。ステップ④ではドラムチューニングの合格が主な目標になります。"},
+
+  // ================================================================
+  // STEP 5 — 提案営業・問題解決
+  // ================================================================
+  {step:4, type:"choice", cat:"営業",
+   text:"ステップ⑤の「スタジオ業務」における営業の達成条件はどれですか？",
+   options:["新規のお客様を5名以上獲得した","スタジオの新たな使い方を顧客に10回以上説明・提案できた（日報で判断）","オプションサービスの契約を3件以上成立させた","販売品の売上を前月比10%以上伸ばした"],
+   correct:1,
+   explanation:"ステップ⑤の達成条件は「スタジオで新たな使い方ができることを顧客に説明・提案できる（上司が日報で判断。説明回数10回以上）」です。提案した記録を日報に残すことが重要です。"},
+
+  {step:4, type:"ox", cat:"人材育成",
+   text:"ステップ⑤の人材育成は「ステップ③までを教えて、教えたスタッフがステップ③まで上がった」が達成条件だ。",
+   correct:true,
+   explanation:"ステップ⑤の人材育成条件は「ステップ③までを教えて、教えたスタッフがステップ③まで上がった」です。ステップ④では②まで、ステップ⑤では③までと、育成のレベルも段階的に上がります。"},
+
+  {step:4, type:"choice", cat:"日報",
+   text:"ステップ⑦レベルで問題が発生したとき、期待される行動はどれですか？",
+   options:["自分で判断して解決し、結果だけを報告する","すぐに上司に全て任せる","解決案を出して上司に相談し、問題から解決に至った経緯を毎回日報に残す","同じ問題が3回起きてから対策を考える"],
+   correct:2,
+   explanation:"ステップ⑦では「問題が出た時は解決案を出し、上司に相談している。問題から解決に至った経緯を毎回日報に残している」が求められます。解決だけでなく、記録・共有まで行うことが重要です。"},
+
+  {step:4, type:"choice", cat:"営業",
+   text:"ステップ⑥の「スタジオ業務」における営業の達成条件はどれですか？",
+   options:["提案件数10回以上（説明のみ）","スタジオの新たな使い方の成約回数5回以上","イベント開催の成約3回以上","ホームページの更新が自分でできる"],
+   correct:1,
+   explanation:"ステップ⑥は「スタジオで新たな使い方ができることを顧客に説明・提案できる（成約回数5回以上）」です。ステップ⑤は説明10回以上、⑥は成約5回以上と、質と結果が求められるようになります。"},
+
+  {step:4, type:"ox", cat:"メール対応",
+   text:"ステップ⑦のメール対応では、予約以外の同一問題での返信を2回以内で終わらせることが求められる。",
+   correct:true,
+   explanation:"ステップ⑦のメール達成条件は「顧客の要望を読み、聞かれるであろうことを先に答えている。同一問題での返信を2回以内で終わらせている（予約以外）」です。先読みして先手を打つ対応が求められます。"},
+
+  {step:4, type:"choice", cat:"人材育成",
+   text:"スタッフへの教育（育成）を始める際のルールとして正しいのは？",
+   options:["上司から指名されたスタッフを教える","教える本人から希望を募って行う","入社順に自動的に担当が決まる","管理者が全て教育を行う"],
+   correct:1,
+   explanation:"マニュアルでは「教える本人から希望を募る」と記載されています。育成を受けたいスタッフが手を挙げる仕組みになっており、一方的に押し付けることはありません。"},
+
+];
+// =====================================================================
+// ★ 問題データここまで ★
+// =====================================================================
+
+// ── 設定値 ──
+const STEP_COLS   = ['#1C508A','#2d6aad','#16a085','#8e44ad','#c0392b'];
+const QT          = 30;   // 制限時間（秒）
+const PASS_RATE   = 0.6;  // 合格ライン（60%）
+
+const STEP_INFO = [
+  {title:'ステップ①', subtitle:'清掃・備品・クローズ業務',       stars:1},
+  {title:'ステップ②', subtitle:'チケット・レジ・電話・予約',       stars:2},
+  {title:'ステップ③', subtitle:'メンテナンス・機材・新規対応',      stars:3},
+  {title:'ステップ④', subtitle:'機材説明・ドラム・人材育成',        stars:4},
+  {title:'ステップ⑤', subtitle:'提案営業・問題解決',               stars:5},
+];
+
+// ── ストレージ ──
+const LS = {
+  get: k => { try{const v=localStorage.getItem(k);return v?JSON.parse(v):null}catch{return null} },
+  set: (k,v) => { try{localStorage.setItem(k,JSON.stringify(v))}catch{} }
+};
+
+// ── アプリ状態 ──
+let staffName = LS.get('sv_name') || '';
+let results   = LS.get('sv_results') || [];
+
+// ── ユーティリティ ──
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length-1; i > 0; i--) {
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]] = [a[j],a[i]];
+  }
+  return a;
+}
+function getPool(stepIdx) {
+  return QUESTION_BANK.filter(q => q.step === stepIdx);
+}
+function pickQuestions(stepIdx) {
+  const pool = getPool(stepIdx);
+  return shuffle(pool).slice(0, Math.min(Q_PER_TEST, pool.length));
+}
+function isUnlocked(idx) {
+  if (idx === 0) return true;
+  return results.some(r => r.staffName===staffName && r.stepIdx===idx-1 && r.passed);
+}
+function getBest(idx) {
+  const sr = results.filter(r => r.staffName===staffName && r.stepIdx===idx);
+  return sr.sort((a,b) => b.totalScore-a.totalScore)[0] || null;
+}
+
+// ── 画面切り替え ──
+const App = {
+  show(id) {
+    document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+    document.getElementById('screen-'+id).classList.add('active');
+    window.scrollTo(0,0);
+  },
+  goRole()    { this.show('role'); },
+  goManager() { Manager.render(); this.show('manager'); },
+  goStaff()   {
+    if(staffName){ document.getElementById('name-input').value=staffName; Staff.showNameOk(); }
+    Staff.renderMap();
+    this.show('staff');
+  },
+  showTab(t) {
+    ['q','res'].forEach(k=>{
+      document.getElementById('tab-'+k).style.display = k===t?'block':'none';
+      document.getElementById('tab-'+k+'-btn').classList.toggle('on',k===t);
+    });
+    if(t==='res') Manager.renderResults();
+  },
+  saveName() {
+    const n = document.getElementById('name-input').value.trim();
+    if(!n) return;
+    staffName = n;
+    LS.set('sv_name', n);
+    Staff.showNameOk();
+    Staff.renderMap();
+  }
+};
+
+// ── スタッフ ──
+const Staff = {
+  showNameOk() {
+    const el = document.getElementById('name-ok');
+    el.style.display = 'block';
+    el.textContent = '✓ ' + staffName + ' さん';
+  },
+  renderMap() {
+    const c = document.getElementById('step-map');
+    c.innerHTML = '';
+    STEP_INFO.forEach((s,idx) => {
+      if(idx>0){ const conn=document.createElement('div');conn.className='step-conn';c.appendChild(conn); }
+      const pool    = getPool(idx);
+      const unlocked= isUnlocked(idx);
+      const best    = getBest(idx);
+      const passed  = best?.passed;
+      const hasQ    = pool.length > 0;
+      const canStart= unlocked && hasQ && !!staffName;
+      const col     = STEP_COLS[idx];
+      let badgeHtml = '';
+      if(!unlocked)      badgeHtml=`<span class="badge b-lock">🔒 ロック中</span>`;
+      else if(!hasQ)     badgeHtml=`<span class="badge" style="background:#fff7ed;color:var(--warn)">⚠ 問題未登録</span>`;
+      else if(passed)    badgeHtml=`<span class="badge b-ok">✅ 合格済み · ${best.totalScore}pt（登録問題数: ${pool.length}問）</span>`;
+      else if(best)      badgeHtml=`<span class="badge b-ng">再挑戦 · 最高${best.totalScore}pt</span>`;
+      else               badgeHtml=`<span class="badge b-new">NEW · ${pool.length}問プールから${Math.min(Q_PER_TEST,pool.length)}問出題</span>`;
+      const el = document.createElement('div');
+      el.className = 'step-card' + (canStart?' can':'') + (passed?' passed':'') + (!unlocked||!hasQ?' locked':'');
+      el.innerHTML = `
+        <div class="snum" style="background:${unlocked?col+'22':'#f1f5f9'};color:${unlocked?col:'#94a3b8'}">
+          <span class="sw">STEP</span><span class="sn">${idx+1}</span>
+        </div>
+        <div class="sinfo">
+          <h3>${s.title}</h3><p>${s.subtitle}</p>
+          <div class="stars">${'⭐'.repeat(s.stars)}${'☆'.repeat(5-s.stars)}</div>
+          <div style="margin-top:5px">${badgeHtml}</div>
+        </div>
+        ${canStart&&!passed?`<span style="font-size:14px;color:${col};font-weight:700">→</span>`:''}
+        ${!unlocked?'<span style="font-size:20px">🔒</span>':''}`;
+      if(canStart) el.onclick = () => Quiz.start(idx);
+      c.appendChild(el);
+    });
+  }
+};
+
+// ── クイズ ──
+const Quiz = {
+  stepIdx:0, qList:[], qIdx:0, score:0, bonus:0,
+  tLeft:QT, answered:false, timer:null, log:[],
+
+  start(idx) {
+    this.stepIdx = idx;
+    this.qList   = pickQuestions(idx);
+    this.qIdx    = 0; this.score=0; this.bonus=0;
+    this.answered= false; this.log=[];
+    App.show('quiz');
+    this.render();
+  },
+  retry() { this.start(this.stepIdx); },
+
+  render() {
+    const q     = this.qList[this.qIdx];
+    const total = this.qList.length;
+    this.answered = false;
+    document.getElementById('qh-step').textContent  = `STEP ${this.stepIdx+1}`;
+    document.getElementById('qh-cnt').textContent   = `${this.qIdx+1} / ${total}`;
+    document.getElementById('qh-score').textContent = `${this.score+this.bonus} pt`;
+    document.getElementById('qbar-fill').style.width= `${(this.qIdx/total)*100}%`;
+    document.getElementById('pill-type').textContent= q.type==='choice'?'4択':'○×';
+    document.getElementById('pill-cat').textContent = q.cat;
+    document.getElementById('q-text').textContent   = q.text;
+    document.getElementById('fb').className         = 'fb';
+    document.getElementById('bonus-flash').className= 'bonus-flash';
+    document.getElementById('next-btn').className   = 'next-btn';
+    const area = document.getElementById('q-opts');
+    area.innerHTML = '';
+    if(q.type==='choice'){
+      const ul = document.createElement('ul'); ul.className='opts';
+      ['A','B','C','D'].forEach((l,i)=>{
+        const li=document.createElement('li');
+        const bt=document.createElement('button'); bt.className='opt';
+        bt.innerHTML=`<span class="opt-k">${l}</span><span>${q.options[i]}</span>`;
+        bt.onclick=()=>this.answerChoice(i);
+        li.appendChild(bt); ul.appendChild(li);
+      });
+      area.appendChild(ul);
+    } else {
+      const row=document.createElement('div'); row.className='ox-row';
+      [true,false].forEach((v,i)=>{
+        const bt=document.createElement('button'); bt.className='ox';
+        bt.textContent=v?'○':'×'; bt.onclick=()=>this.answerOX(v);
+        row.appendChild(bt);
+      });
+      area.appendChild(row);
+    }
+    this.startTimer();
+  },
+
+  startTimer() {
+    this.stopTimer(); this.tLeft=QT; this.updateTimerUI(QT);
+    this.timer = setInterval(()=>{
+      this.tLeft = Math.max(0,+(this.tLeft-0.1).toFixed(1));
+      this.updateTimerUI(this.tLeft);
+      if(this.tLeft<=0){ this.stopTimer(); this.handleTimeout(); }
+    },100);
+  },
+  stopTimer() { clearInterval(this.timer); this.timer=null; },
+  updateTimerUI(cur) {
+    const pct=(cur/QT)*100;
+    const fill=document.getElementById('timer-fill');
+    const num =document.getElementById('timer-num');
+    fill.style.width=pct+'%';
+    const col=pct>50?'var(--ok)':pct>25?'var(--warn)':'var(--ng)';
+    fill.style.background=col; num.style.color=col;
+    num.textContent=Math.ceil(cur);
+  },
+
+  handleTimeout() {
+    if(this.answered) return;
+    this.answered=true;
+    const q=this.qList[this.qIdx];
+    if(q.type==='choice'){
+      document.querySelectorAll('.opt').forEach((b,i)=>{b.disabled=true;if(i===q.correct)b.classList.add('reveal');});
+    } else {
+      document.querySelectorAll('.ox').forEach((b,i)=>{b.disabled=true;if((i===0)===q.correct)b.classList.add('reveal');});
+    }
+    this.showFeedback(false,true,q.explanation,0);
+    this.log.push({correct:false,timeUsed:QT,bonus:0,text:q.text});
+    this.showNextBtn();
+  },
+
+  answerChoice(sel) {
+    if(this.answered) return;
+    this.stopTimer(); this.answered=true;
+    const q=this.qList[this.qIdx];
+    const ok=sel===q.correct;
+    const used=QT-this.tLeft;
+    const b=this.calcBonus(ok,used);
+    document.querySelectorAll('.opt').forEach((bt,i)=>{
+      bt.disabled=true;
+      if(i===q.correct)bt.classList.add('ok');
+      else if(i===sel&&!ok)bt.classList.add('ng');
+    });
+    this.apply(ok,b); this.showFeedback(ok,false,q.explanation,b);
+    this.log.push({correct:ok,timeUsed:Math.round(used),bonus:b,text:q.text});
+    this.showNextBtn();
+  },
+  answerOX(sel) {
+    if(this.answered) return;
+    this.stopTimer(); this.answered=true;
+    const q=this.qList[this.qIdx];
+    const ok=sel===q.correct;
+    const used=QT-this.tLeft;
+    const b=this.calcBonus(ok,used);
+    document.querySelectorAll('.ox').forEach((bt,i)=>{
+      bt.disabled=true;
+      if((i===0)===q.correct)bt.classList.add('ok');
+      else if((i===0)===sel&&!ok)bt.classList.add('ng');
+    });
+    this.apply(ok,b); this.showFeedback(ok,false,q.explanation,b);
+    this.log.push({correct:ok,timeUsed:Math.round(used),bonus:b,text:q.text});
+    this.showNextBtn();
+  },
+  calcBonus(ok,used){ if(!ok)return 0;if(used<=10)return 5;if(used<=20)return 3;return 1; },
+  apply(ok,b){
+    if(ok){this.score+=10;this.bonus+=b;}
+    document.getElementById('qh-score').textContent=`${this.score+this.bonus} pt`;
+  },
+  showFeedback(ok,timeout,exp,b){
+    const fb=document.getElementById('fb');
+    fb.className='fb show '+(ok?'fb-ok':timeout?'fb-to':'fb-ng');
+    document.getElementById('fb-title').textContent=ok?'✅ 正解！':timeout?'⏱ 時間切れ！':'❌ 不正解';
+    document.getElementById('fb-body').textContent=exp;
+    if(b>0){
+      const bf=document.getElementById('bonus-flash');
+      bf.textContent=b===5?'⚡ 超速！ ＋5ボーナスpt':b===3?'🔥 速い！ ＋3ボーナスpt':'👍 ＋1ボーナスpt';
+      bf.className='bonus-flash show';
+    }
+  },
+  showNextBtn(){
+    const nb=document.getElementById('next-btn');
+    nb.className='next-btn show';
+    nb.textContent=this.qIdx+1<this.qList.length?'次の問題 →':'結果を見る →';
+  },
+
+  next() {
+    this.qIdx++;
+    if(this.qIdx>=this.qList.length){ this.showResult(); }
+    else { this.render(); }
+  },
+
+  showResult() {
+    const total=this.qList.length;
+    const cc=this.log.filter(l=>l.correct).length;
+    const tb=this.log.reduce((s,l)=>s+l.bonus,0);
+    const fs=cc*10; const ts=fs+tb;
+    const passed=cc/total>=PASS_RATE;
+    const rec={staffName,stepIdx:this.stepIdx,score:fs,bonus:tb,totalScore:ts,correctCount:cc,totalQ:total,passed,date:new Date().toISOString()};
+    results.push(rec); LS.set('sv_results',results);
+
+    const wasFirst = results.filter(r=>r.staffName===staffName&&r.stepIdx===this.stepIdx&&r.passed).length===1;
+    const nextIdx  = this.stepIdx+1;
+    const ub       = document.getElementById('unlock-banner');
+    if(passed&&wasFirst&&nextIdx<STEP_INFO.length){
+      ub.style.display='block';
+      document.getElementById('unlock-msg').textContent=`STEP ${nextIdx+1}「${STEP_INFO[nextIdx].title}」が解放されました！`;
+    } else { ub.style.display='none'; }
+
+    document.getElementById('res-emoji').textContent = passed?'🎉':'📚';
+    const badge=document.getElementById('res-badge');
+    badge.textContent=passed?'✅ 合格 PASS':'❌ 不合格 — 再挑戦してください';
+    badge.className='badge '+(passed?'b-ok':'b-ng');
+    document.getElementById('res-name').textContent  = (staffName||'スタッフ')+' さん';
+    document.getElementById('res-stag').textContent  = `STEP ${this.stepIdx+1} · ${STEP_INFO[this.stepIdx].title}`;
+    document.getElementById('res-cc').textContent    = `${cc}/${total}`;
+    document.getElementById('res-bn').textContent    = `＋${tb}`;
+    document.getElementById('res-ts').textContent    = ts;
+    document.getElementById('res-msg').textContent   = passed
+      ? `正解率 ${Math.round(cc/total*100)}%で合格です。合計 ${ts}pt を獲得しました。`
+      : `正解率 ${Math.round(cc/total*100)}%（合格ライン: ${Math.round(PASS_RATE*100)}%）。解説を確認してもう一度挑戦してください！`;
+
+    const rows=document.getElementById('rev-rows'); rows.innerHTML='';
+    this.log.forEach((log,i)=>{
+      const icon=log.correct?'✅':(log.timeUsed>=QT?'⏱':'❌');
+      const bonusSpan=log.bonus>0?` <span style="color:var(--accent);font-weight:700">＋${log.bonus}pt</span>`:'';
+      const el=document.createElement('div'); el.className='rev-row';
+      el.innerHTML=`<span class="rev-ic">${icon}</span>
+        <div class="rev-info">
+          <div class="rev-q">Q${i+1}. ${log.text.length>42?log.text.slice(0,42)+'…':log.text}</div>
+          <div class="rev-d">${log.correct?'正解':'不正解'} · ${log.timeUsed}秒${bonusSpan}</div>
+        </div>
+        <div class="rev-pt">${log.correct?'10pt':'0pt'}</div>`;
+      rows.appendChild(el);
+    });
+    App.show('result');
+  }
+};
+
+// ── 管理者 ──
+const Manager = {
+  render() { this.renderQList(); this.renderResults(); },
+  flash(msg) {
+    const el=document.getElementById('flash');
+    el.textContent='✅ '+msg; el.style.display='block';
+    setTimeout(()=>{el.style.display='none';},3000);
+  },
+
+  renderQList() {
+    const c=document.getElementById('q-mgr-list'); c.innerHTML='';
+    STEP_INFO.forEach((s,si)=>{
+      const pool=getPool(si);
+      const el=document.createElement('div');
+      el.className='card'; el.style.marginBottom='12px';
+      const badge=pool.length>0
+        ?`<span class="badge b-ok">${pool.length}問登録済み</span>`
+        :`<span class="badge b-ng">未登録</span>`;
+      let qhtml=pool.length===0
+        ?`<div style="text-align:center;padding:10px 0;color:var(--txt-s);font-size:12px">問題未登録</div>`
+        :pool.map((q,qi)=>`
+          <div class="q-editor-item">
+            <div class="qe-meta">
+              <span class="badge b-brand">Q${qi+1}</span>
+              <span class="badge b-lock">${q.type==='choice'?'4択':'○×'}</span>
+              <span class="badge b-lock">${q.cat}</span>
+            </div>
+            <div class="qe-text">${q.text}</div>
+            <div class="qe-ans">${q.type==='choice'
+              ? q.options.map((o,j)=>`<span style="margin-right:8px;color:${j===q.correct?'var(--ok)':'inherit'};font-weight:${j===q.correct?700:400}">${['A','B','C','D'][j]}.${o}</span>`).join('')
+              : `正解: <strong style="color:${q.correct?'var(--ok)':'var(--ng)'}">${q.correct?'○':'×'}</strong>`
+            }</div>
+          </div>`).join('');
+      // 出題ランダム情報
+      const rndInfo=pool.length>Q_PER_TEST
+        ?`<div style="background:rgba(28,80,138,.07);border-radius:8px;padding:8px 12px;font-size:12px;color:var(--brand);margin-bottom:10px;font-weight:600">🎲 ${pool.length}問のプールから毎回 ${Q_PER_TEST}問をランダム出題</div>`
+        :pool.length>0
+        ?`<div style="background:#fff7ed;border-radius:8px;padding:8px 12px;font-size:12px;color:var(--warn);margin-bottom:10px;font-weight:600">💡 問題を${Q_PER_TEST}問以上登録するとランダム出題が有効になります（現在${pool.length}問）</div>`
+        :'';
+      el.innerHTML=`
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+          <div><span style="font-size:15px;font-weight:700">${s.title}</span>
+          <span style="font-size:11px;color:var(--txt-m);margin-left:8px">${s.subtitle}</span></div>
+          ${badge}
+        </div>${rndInfo}${qhtml}
+        <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border)">
+          <button class="btn btn-o btn-w" style="padding:9px;font-size:12px;border-radius:8px" onclick="Manager.showAddForm(${si},this)">
+            ＋ 問題を追加
+          </button>
+          <div class="add-q-form" style="display:none;margin-top:10px" id="add-form-${si}"></div>
+        </div>`;
+      c.appendChild(el);
+    });
+  },
+
+  showAddForm(si, btn) {
+    const formEl=document.getElementById('add-form-'+si);
+    if(formEl.style.display==='block'){ formEl.style.display='none'; btn.textContent='＋ 問題を追加'; return; }
+    btn.textContent='✕ キャンセル';
+    formEl.style.display='block';
+    formEl.innerHTML=`
+      <label>問題形式</label>
+      <select id="af-type-${si}" onchange="Manager.toggleOptFields(${si})">
+        <option value="choice">4択</option>
+        <option value="ox">○×</option>
+      </select>
+      <label>カテゴリ（例：清掃・備品管理・電話対応）</label>
+      <input type="text" id="af-cat-${si}" placeholder="カテゴリ名">
+      <label>問題文</label>
+      <textarea id="af-text-${si}" rows="3" placeholder="問題文を入力..."></textarea>
+      <div id="af-choice-area-${si}">
+        <label>選択肢A</label><input type="text" id="af-a-${si}" placeholder="選択肢A">
+        <label>選択肢B</label><input type="text" id="af-b-${si}" placeholder="選択肢B">
+        <label>選択肢C</label><input type="text" id="af-c-${si}" placeholder="選択肢C">
+        <label>選択肢D</label><input type="text" id="af-d-${si}" placeholder="選択肢D">
+        <label>正解（A〜D）</label>
+        <select id="af-correct-${si}">
+          <option value="0">A</option><option value="1">B</option>
+          <option value="2">C</option><option value="3">D</option>
+        </select>
+      </div>
+      <div id="af-ox-area-${si}" style="display:none">
+        <label>正解</label>
+        <select id="af-ox-${si}"><option value="true">○（正しい）</option><option value="false">×（誤り）</option></select>
+      </div>
+      <label>解説</label>
+      <textarea id="af-exp-${si}" rows="2" placeholder="解説文を入力..."></textarea>
+      <button class="btn btn-b btn-w" style="margin-top:12px;padding:12px;font-size:13px;border-radius:8px" onclick="Manager.addQuestion(${si})">追加する</button>`;
+  },
+
+  toggleOptFields(si) {
+    const t=document.getElementById('af-type-'+si).value;
+    document.getElementById('af-choice-area-'+si).style.display=t==='choice'?'block':'none';
+    document.getElementById('af-ox-area-'+si).style.display=t==='ox'?'block':'none';
+  },
+
+  addQuestion(si) {
+    const type=document.getElementById('af-type-'+si).value;
+    const cat =document.getElementById('af-cat-'+si).value.trim();
+    const text=document.getElementById('af-text-'+si).value.trim();
+    const exp =document.getElementById('af-exp-'+si).value.trim();
+    if(!cat||!text||!exp){ alert('カテゴリ・問題文・解説は必須です'); return; }
+    const q={step:si, type, cat, text, explanation:exp};
+    if(type==='choice'){
+      const a=document.getElementById('af-a-'+si).value.trim();
+      const b=document.getElementById('af-b-'+si).value.trim();
+      const cc=document.getElementById('af-c-'+si).value.trim();
+      const d=document.getElementById('af-d-'+si).value.trim();
+      if(!a||!b||!cc||!d){ alert('4択の場合は選択肢A〜Dをすべて入力してください'); return; }
+      q.options=[a,b,cc,d];
+      q.correct=parseInt(document.getElementById('af-correct-'+si).value);
+    } else {
+      q.correct=document.getElementById('af-ox-'+si).value==='true';
+    }
+    QUESTION_BANK.push(q);
+    this.flash(`${STEP_INFO[si].title}に問題を追加しました（現在${getPool(si).length}問）`);
+    this.renderQList();
+    Staff.renderMap();
+  },
+
+  renderResults() {
+    const c=document.getElementById('res-content');
+    const staffList=[...new Set(results.map(r=>r.staffName))];
+    if(!staffList.length){
+      c.innerHTML=`<div class="card" style="text-align:center;padding:40px 20px;color:var(--txt-s);font-size:14px">まだ受験したスタッフがいません</div>`;
+      return;
+    }
+    let th=`<th>スタッフ</th>`+STEP_INFO.map((_,i)=>`<th style="text-align:center">STEP${i+1}</th>`).join('');
+    let rows=staffList.map(name=>{
+      let cells=STEP_INFO.map((_,si)=>{
+        const sr=results.filter(r=>r.staffName===name&&r.stepIdx===si);
+        if(!sr.length)return`<td style="text-align:center;color:var(--border);font-size:11px">—</td>`;
+        const passed=sr.some(r=>r.passed);
+        const best=sr.sort((a,b)=>b.totalScore-a.totalScore)[0];
+        return`<td style="text-align:center"><span class="badge ${passed?'b-ok':'b-ng'}">${passed?'✅':'❌'} ${best.totalScore}pt</span></td>`;
+      }).join('');
+      return`<tr><td style="padding:7px 8px;font-weight:600">${name}</td>${cells}</tr>`;
+    }).join('');
+    let details=staffList.map(name=>{
+      const sr=results.filter(r=>r.staffName===name).sort((a,b)=>new Date(b.date)-new Date(a.date));
+      const passCount=STEP_INFO.filter((_,i)=>sr.some(r=>r.stepIdx===i&&r.passed)).length;
+      const rowsHTML=sr.slice(0,8).map(r=>`
+        <div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--surface2);flex-wrap:wrap">
+          <span class="badge ${r.passed?'b-ok':'b-ng'}">${r.passed?'合格':'不合格'}</span>
+          <span style="font-size:12px;color:var(--txt-m);flex:1">${STEP_INFO[r.stepIdx]?.title} — ${r.correctCount}/${r.totalQ}問正解</span>
+          <span style="font-family:var(--fm);font-size:12px;font-weight:700;color:var(--brand)">${r.totalScore}pt</span>
+          <span style="font-size:10px;color:var(--txt-s)">${new Date(r.date).toLocaleDateString('ja-JP')}</span>
+        </div>`).join('');
+      return`<div class="card" style="margin-bottom:12px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+          <div style="font-size:14px;font-weight:700">👤 ${name}</div>
+          <span class="badge b-brand">${passCount}/${STEP_INFO.length} ステップ合格</span>
+        </div>${rowsHTML}</div>`;
+    }).join('');
+    c.innerHTML=`
+      <div class="card" style="margin-bottom:14px;overflow-x:auto">
+        <div style="font-size:11px;font-weight:700;color:var(--txt-s);letter-spacing:.08em;text-transform:uppercase;margin-bottom:12px">進捗サマリー</div>
+        <table class="res-table"><thead><tr>${th}</tr></thead><tbody>${rows}</tbody></table>
+      </div>${details}`;
+  }
+};
+
+// ── 初期化 ──
+if(staffName){ document.getElementById('name-input').value=staffName; }
+</script>
+</body>
+</html>
